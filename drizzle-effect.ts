@@ -14,8 +14,6 @@ import * as Effectable from "effect/Effectable";
 import * as Predicate from "effect/Predicate";
 import type * as mysql2 from "mysql2/promise";
 
-
-
 /**
  * `client instanceof Client` doesn't work cause instanceof is stupid
  */
@@ -65,7 +63,7 @@ export const make = <TSchema extends Record<string, unknown>>(
       };
     }
 
-    return drizzle(remoteCallback, {  logger: true });
+    return drizzle(remoteCallback, { logger: true });
   });
 
 export class Client extends Context.Tag("@effect/sql-drizzle/MysqlDrizzle")<
@@ -81,12 +79,12 @@ export class SqlError extends TypeIdError(SqlErrorTypeId, "SqlError")<{
 }> {}
 
 export class EmptyQueryError extends Data.TaggedError("EmptyQueryError")<{
-    message?: string;
+  message?: string;
 }> {
-    constructor(message = "No rows matching query") {
-        super({ message })
-    }
-}   
+  constructor(message = "No rows matching query") {
+    super({ message });
+  }
+}
 
 /**
  * Turn Drizzle's builder result into Effects instead of Promises
