@@ -12,17 +12,15 @@ const users = D.mysqlTable("users", {
   name: D.text("name"),
 });
 
-const schema = {
-  users,
-};
-
-export function takeFirstOrThrow(errorMessage?: string) {
-  return <T>(rows: T[]) => {
-    const [row] = rows;
-    if (!row) throw new Error("No elements in array");
-    return row;
-  };
-}
+const takeFirstOrThrow =
+  <A extends ReadonlyArray<unknown>, E>(msg?: string) =>
+  (effect: Effect.Effect<A, E>): Effect.Effect<A[number], E> =>
+    effect.pipe(
+      Effect.map(Array.head),
+      Effect.map(
+        Option.getOrThrowWith(() => new MySqlDrizzle.EmptyQueryError(msg)),
+      ),
+    );
 
 const program = Effect.gen(function* () {
   yield* Effect.log("Welcome to the Effect Playground!");
@@ -39,22 +37,8 @@ const program = Effect.gen(function* () {
   const results = yield* db.select().from(users);
   console.log(results);
 
-  const aliceWorks = takeFirstOrThrow()(yield* db.select().from(users));
-
-  // How about a more "piped" version?
-  const aliceDoesntWork = yield* db
-    .select()
-    .from(users)
-    .pipe(
-      Array.head,
-      Option.getOrThrowWith(() => new MySqlDrizzle.EmptyQueryError()),
-    );
-
-  // Can you just not do this??
-  Effect.sync(() => ["foo", "bar"]).pipe(
-    Array.head,
-    Option.getOrThrowWith(() => new MySqlDrizzle.EmptyQueryError()),
-  );
+  const alice = yield* db.select().from(users).pipe(takeFirstOrThrow());
+  console.log(alice);
 }).pipe(
   Effect.withSpan("program", {
     attributes: { source: "Playground" },
