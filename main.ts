@@ -37,7 +37,10 @@ const program = Effect.gen(function* () {
   const results = yield* db.select().from(users);
   console.log(results);
 
-  const alice = yield* db.select().from(users).pipe(takeFirstOrThrow());
+  const alice = yield* db
+    .select()
+    .from(users)
+    .pipe(takeFirstOrThrow("No users"));
   console.log(alice);
 }).pipe(
   Effect.withSpan("program", {
